@@ -7,6 +7,7 @@
 on:
   push:
     tags:
+      - 'v*.*.*'
       # Solo cuando el tag parece una versión: v1.0.0, v2.3.4, etc.
   workflow_dispatch:
 

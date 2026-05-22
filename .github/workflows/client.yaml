@@ -6,12 +6,6 @@ on:
 
 jobs:
   usar-receta-compartida:
-    runs-on: ubuntu-latest
-    # ESTA ES LA LÍNEA QUE DEBES AGREGAR:
-    defaults:
-      run:
-        working-directory: ./app
-    
     uses: asanchezo-duoc/AUY1104-SharedWorkflows/.github/workflows/deploy-api.yaml@main
     with:
       image-name: demo-api

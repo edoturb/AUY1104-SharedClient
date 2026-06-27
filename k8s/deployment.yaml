@@ -23,7 +23,7 @@ spec:
         - name: dockerhub-secret
       containers:
         - name: demo-api
-          image: edoturbina/demo-api:version-que-no-existe
+          image: edoturbina/demo-api:latest
           ports:
             - containerPort: 3000
           readinessProbe:

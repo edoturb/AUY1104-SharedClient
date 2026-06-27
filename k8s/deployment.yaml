@@ -19,6 +19,8 @@ spec:
       labels:
         app: demo-api
     spec:
+      imagePullSecrets:
+        - name: dockerhub-secret
       containers:
         - name: demo-api
           image: edoturbina/demo-api:latest

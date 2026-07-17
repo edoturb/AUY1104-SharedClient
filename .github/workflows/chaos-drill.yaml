@@ -1,0 +1,42 @@
+name: Chaos Drill (prueba manual de fallos)
+
+on:
+  workflow_dispatch:
+    inputs:
+      fault-type:
+        description: 'Tipo de fallo a inyectar'
+        required: true
+        type: choice
+        options:
+          - imagen-inexistente
+          - health-path-invalido
+
+jobs:
+  inject-fault:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determinar parametros segun el fallo
+        id: params
+        run: |
+          if [ "${{ inputs.fault-type }}" = "imagen-inexistente" ]; then
+            echo "image=edoturbina/demo-api:version-que-no-existe" >> "$GITHUB_OUTPUT"
+            echo "health=/health" >> "$GITHUB_OUTPUT"
+          else
+            echo "image=edoturbina/demo-api:9cb367c6162c77ffeefaa80d32f1398580c0aa9f" >> "$GITHUB_OUTPUT"
+            echo "health=/ruta-que-no-existe" >> "$GITHUB_OUTPUT"
+          fi
+    outputs:
+      image: ${{ steps.params.outputs.image }}
+      health: ${{ steps.params.outputs.health }}
+
+  deploy-with-fault:
+    needs: inject-fault
+    uses: edoturb/AUY1104-SharedWorkflows/.github/workflows/deploy-bluegreen-k3s.yaml@main
+    with:
+      namespace: default
+      app-name: demo-api
+      image-uri: ${{ needs.inject-fault.outputs.image }}
+      health-path: ${{ needs.inject-fault.outputs.health }}
+    secrets:
+      SSH_PRIVATE_KEY: ${{ secrets.EA2_SSH_PRIVATE_KEY }}
+      K3S_SERVER_IP: ${{ secrets.K3S_SERVER_PUBLIC_IP }}

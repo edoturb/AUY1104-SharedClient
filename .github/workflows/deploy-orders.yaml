@@ -1,9 +1,38 @@
-build-and-push:
+name: Deploy Orders - Blue/Green K3s
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deps-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm ci
+      - run: npm test
+
+  build-and-push:
     needs: deps-and-test
     uses: edoturb/AUY1104-SharedWorkflows/.github/workflows/build-push-dockerhub.yaml@main
     with:
-      docker-username: ${{ vars.DOCKER_USERNAME || 'edoturbina' }}
+      docker-username: edoturbina
       image-name: demo-api
       image-tag: ${{ github.sha }}
     secrets:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+  deploy-blue-green:
+    needs: build-and-push
+    uses: edoturb/AUY1104-SharedWorkflows/.github/workflows/deploy-bluegreen-k3s.yaml@main
+    with:
+      namespace: default
+      app-name: demo-api
+      image-uri: ${{ needs.build-and-push.outputs.image-uri }}
+      health-path: /
+    secrets:
+      SSH_PRIVATE_KEY: ${{ secrets.EA2_SSH_PRIVATE_KEY }}
+      K3S_SERVER_IP: ${{ secrets.K3S_SERVER_PUBLIC_IP }}

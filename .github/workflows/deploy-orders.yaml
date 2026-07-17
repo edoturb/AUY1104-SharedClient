@@ -32,7 +32,7 @@ jobs:
       namespace: default
       app-name: demo-api
       image-uri: ${{ needs.build-and-push.outputs.image-uri }}
-      health-path: /
+      health-path: /health
     secrets:
       SSH_PRIVATE_KEY: ${{ secrets.EA2_SSH_PRIVATE_KEY }}
       K3S_SERVER_IP: ${{ secrets.K3S_SERVER_PUBLIC_IP }}
